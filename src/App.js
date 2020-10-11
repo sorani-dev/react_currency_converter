@@ -21,6 +21,9 @@ function App() {
     toAmount = amount
     fromAmount = amount / exchangeRate
   }
+  if (fromCurrency === toCurrency) {
+    toAmount = fromAmount
+  }
 
   useEffect(() => {
     fetch(BASE_URL)
@@ -32,8 +35,21 @@ function App() {
         setToCurrency(firstCurrency)
         setExchangeRate(data.rates[firstCurrency])
       })
+      .catch(err => console.error(err))
     return () => {}
   }, [])
+
+  /**
+   * update currency on selected currency change
+   */
+  useEffect(() => {
+    if (fromCurrency !== undefined && toCurrency !== undefined) {
+      fetch(`${BASE_URL}?base=${fromCurrency}&symbols=${toCurrency}`)
+        .then(res => res.json())
+        .then(data => setExchangeRate(data.rates[toCurrency]))
+        .catch(err => console.error(err))
+    }
+  }, [fromCurrency, toCurrency])
 
   /**
    * Get the amount from the "From" input
