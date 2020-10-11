@@ -8,6 +8,19 @@ function App() {
   const [currencyOptions, setCurrencyOptions] = useState([])
   const [fromCurrency, setFromCurrency] = useState()
   const [toCurrency, setToCurrency] = useState()
+  const [exchangeRate, setExchangeRate] = useState() // exchange rate
+  const [amount, setAmount] = useState(1) //amount to convert
+  const [amountInFromCurrency, setAmountInFromCurrency] = useState(true) // which box is selected now
+
+  // variables for the two input boxes
+  let toAmount, fromAmount
+  if (amountInFromCurrency) {
+    fromAmount = amount
+    toAmount = amount * exchangeRate
+  } else {
+    toAmount = amount
+    fromAmount = amount / exchangeRate
+  }
 
   useEffect(() => {
     fetch(BASE_URL)
@@ -17,9 +30,28 @@ function App() {
         setCurrencyOptions([data.base, ...Object.keys(data.rates)])
         setFromCurrency(data.base)
         setToCurrency(firstCurrency)
+        setExchangeRate(data.rates[firstCurrency])
       })
     return () => {}
   }, [])
+
+  /**
+   * Get the amount from the "From" input
+   * @param {Event} e
+   */
+  const handleFromAmountChange = e => {
+    setAmount(e.target.value)
+    setAmountInFromCurrency(true)
+  }
+
+  /**
+   * Get the amount from the "To" input
+   * @param {Event} e
+   */
+  const handleToAmountChange = e => {
+    setAmount(e.target.value)
+    setAmountInFromCurrency(false)
+  }
 
   return (
     <Fragment>
@@ -28,9 +60,17 @@ function App() {
         currencyOptions={currencyOptions}
         selectedCurrency={fromCurrency}
         onChangeCurrency={e => setFromCurrency(e.target.value)}
+        onChangeAmount={handleFromAmountChange}
+        amount={fromAmount}
       />
       <div className="equals">=</div>
-      <CurrencyRow currencyOptions={currencyOptions} selectedCurrency={toCurrency} onChangeCurrency={e => setToCurrency(e.target.value)} />
+      <CurrencyRow
+        currencyOptions={currencyOptions}
+        selectedCurrency={toCurrency}
+        onChangeCurrency={e => setToCurrency(e.target.value)}
+        onChangeAmount={handleToAmountChange}
+        amount={toAmount}
+      />
     </Fragment>
   )
 }
